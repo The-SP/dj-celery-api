@@ -1,16 +1,19 @@
 import requests
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from django.conf import settings
 from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
+from rest_framework.views import APIView
+
 from .models import SearchHistory
 from .serializers import SearchHistorySerializer
-from django.conf import settings
 
 
 class WeatherAPIView(APIView):
     """
     API view to fetch weather data for a specified city
     """
+    throttle_classes = [AnonRateThrottle]
 
     def get(self, request):
         # Get city from query parameter
