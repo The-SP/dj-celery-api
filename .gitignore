@@ -51,3 +51,5 @@ dump.rdb
 *.dir
 *.bak
 celerybeat-schedule*
+
+logs/

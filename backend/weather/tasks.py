@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 from celery import shared_task
@@ -8,12 +9,15 @@ from django.utils import timezone
 
 from .models import SearchHistory
 
+logger = logging.getLogger(__name__)
+
 
 @shared_task
 def send_daily_stats_email():
     """
     Sends an email with daily weather search statistics to admin
     """
+    logger.info("Starting send daily stats email task")
     today = timezone.now().date()
     yesterday = today - timedelta(days=1)
     
@@ -48,12 +52,17 @@ Total Searches: {total_searches}
     else:
         message += "No searches were made yesterday\n"
 
-    send_mail(
-        subject=subject,
-        message=message,
-        from_email=settings.EMAIL_HOST_USER,
-        recipient_list=[settings.ADMIN_EMAIL],
-        fail_silently=False,
-    )
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[settings.ADMIN_EMAIL],
+            fail_silently=False,
+        )
+        logger.info("Daily stats email sent successfully")
+    except Exception as e:
+        logger.error(f"Email sending failed: {str(e)}")
+        raise 
 
     return f"Email sent with statistics for {yesterday}: {total_searches} total searches"

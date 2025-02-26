@@ -151,3 +151,39 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # SMTP account username
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')  # SMTP account password
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')  # Default sender address
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@example.com')  # Recipient for admin emails
+
+
+# Ensure logs directory exists
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOGS_DIR, exist_ok=True)
+
+# Simple logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '[%(asctime)s] [%(levelname)s] %(name)s:%(lineno)d - %(message)s',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOGS_DIR, 'logs.log'),
+            'formatter': 'standard',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+    },
+    'loggers': {
+        '': {  # Root logger
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
