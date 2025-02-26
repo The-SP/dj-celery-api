@@ -1,0 +1,66 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    container_name: weather_api_web
+    working_dir: /app/backend
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    env_file:
+      - backend/.env
+    environment:
+      - DATABASE_HOST=postgres
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - postgres
+
+  worker:
+    build: .
+    container_name: weather_api_worker
+    working_dir: /app/backend
+    command: celery -A backend worker -l info
+    env_file:
+      - backend/.env
+    environment:
+      - DATABASE_HOST=postgres
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - web
+      - redis
+
+  beat:
+    build: .
+    container_name: weather_api_beat
+    working_dir: /app/backend
+    command: celery -A backend beat -l info
+    env_file:
+      - backend/.env
+    environment:
+      - DATABASE_HOST=postgres
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - web
+      - redis
+
+  postgres:
+    image: postgres:13
+    container_name: weather_api_db
+    env_file:
+      - backend/.env
+    environment:
+      - DATABASE_HOST=postgres
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+  redis:
+    image: redis:6-alpine
+    container_name: weather_api_redis
+
+volumes:
+  postgres_data:
