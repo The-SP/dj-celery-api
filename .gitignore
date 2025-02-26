@@ -43,3 +43,11 @@ ENV/
 # OS
 .DS_Store
 Thumbs.db
+
+# Redis & Celery
+*.rdb
+dump.rdb
+*.dat
+*.dir
+*.bak
+celerybeat-schedule*
