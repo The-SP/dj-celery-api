@@ -22,8 +22,8 @@ A RESTful API service built with Django REST Framework that provides weather inf
 
 1. Clone the repository:
    ```
-   git clone https://github.com/the-sp/dj-weather-api.git
-   cd dj-weather-api
+   git clone https://github.com/The-SP/dj-celery-api.git
+   cd dj-celery-api
    ```
 
 2. Create and activate a virtual environment:
