@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from celery import shared_task
 from django.conf import settings
 from django.core.mail import send_mail
@@ -13,27 +15,38 @@ def send_daily_stats_email():
     Sends an email with daily weather search statistics to admin
     """
     today = timezone.now().date()
-    search_history = SearchHistory.objects.all()
-    total_searches = search_history.count()
+    yesterday = today - timedelta(days=1)
+    
+    # Get searches from the past 24 hours
+    daily_searches = SearchHistory.objects.filter(
+        timestamp__date=yesterday
+    )
+    total_searches = daily_searches.count()
+    
     # Get most searched cities (top 5)
     most_searched = (
-        search_history.values("city_name")
+        daily_searches.values("city_name")
         .annotate(count=Count("city_name"))
         .order_by("-count")[:5]
     )
 
     # Prepare email
-    subject = f"Weather API Statistics for {today.strftime('%Y-%m-%d')}"
+    subject = f"Weather API Statistics for {yesterday.strftime('%Y-%m-%d')}"
     message = f"""
-        Daily Weather API Statistics:
+======================================================
+🌤️  WEATHER API DAILY STATISTICS REPORT  🌤️
+======================================================
+Report Date: {yesterday.strftime('%A, %B %d, %Y')}
+Total Searches: {total_searches}
 
-        Date: {today.strftime('%Y-%m-%d')}
-        Total Searches: {total_searches}
-        
-        Top Most Searched Cities:
-    """
-    for city in most_searched:
-        message += f"- {city['city_name']}: {city['count']} searches \n"
+🏙️ TOP SEARCHED CITIES
+------------------------------------------------------
+"""
+    if most_searched:
+        for city in most_searched:
+            message += f"- {city['city_name']}: {city['count']} searches\n"
+    else:
+        message += "No searches were made yesterday\n"
 
     send_mail(
         subject=subject,
@@ -43,4 +56,4 @@ def send_daily_stats_email():
         fail_silently=False,
     )
 
-    return f"Email sent with {total_searches} searches for {today}"
+    return f"Email sent with statistics for {yesterday}: {total_searches} total searches"
