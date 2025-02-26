@@ -19,7 +19,7 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'send-daily-weather-stats': {
         'task': 'weather.tasks.send_daily_stats_email',
-        # 'schedule': crontab(hour=23, minute=59),  # Run at 9:00 AM every day
-        'schedule': crontab(minute='*/1'), # Run every minute
+        'schedule': crontab(hour=23, minute=59),  # Run at 9:00 AM every day
+        # 'schedule': crontab(minute='*/1'), # Run every minute
     },
 }
